@@ -1,8 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <windows.h>
+#include <ncurses.h>
+#include <unistd.h>
 #include <string.h>
+
+#define BOOL int
+#define TRUE 1
+#define FALSE 0
 
 #define mapWidth 80
 #define mapHeight 25
@@ -40,15 +45,27 @@ void ClearMap() {
     map[0][mapWidth] = '\0';
 
     for (int j = 1; j < mapHeight; j++)
-        sprintf(map[j], map[0]);
+        strcpy(map[j], map[0]);
 }
 
-void ShowMap() {
+void ShowMap()
+{
+    erase();
 
-    map[mapHeight - 1][mapWidth - 1] = '\0';
+    for (int j = 0; j < mapHeight; j++)
+    {
+        for (int i = 0; i < mapWidth; i++)
+        {
+            char c = map[j][i];
 
-    for (int j = 0; j < mapHeight;j++)
-        sprintf("%s\n", map[j]);
+            // Красим ВСЮ игру в синий
+            attron(COLOR_PAIR(3));
+            mvaddch(j, i, c);
+            attroff(COLOR_PAIR(3));
+        }
+    }
+
+    refresh();
 }
 
 void SetObjectPos(TObject *obj, float xPos, float yPos){
@@ -75,8 +92,11 @@ BOOL IsCollision(TObject o1, TObject o2);
 TObject *GetNewMoving();
 
 void PlayerDead(){
-    system("color 4F");
-    Sleep(500);
+    attron(COLOR_PAIR(1));
+    bkgd(' ' | COLOR_PAIR(1));
+    clear();
+    refresh();
+    usleep(500000);
     CreateLevel(level);
 }
 
@@ -100,7 +120,7 @@ void PutObjectOnMap(TObject obj){
 
 void PutScoreOnMap(){
     char c[30];
-    printf(c, "Score: %d", score);
+    sprintf(c, "Score: %d", score);
 
     int len = strlen(c);
 
@@ -138,8 +158,11 @@ void VertMoveObject(TObject *obj){
                 level++;
                 if (level > maxLvl) level = 1;
 
-                system("color 2F");
-                Sleep(500);
+                attron(COLOR_PAIR(2));
+                bkgd(' ' | COLOR_PAIR(2));
+                clear();
+                refresh();
+                usleep(500000);;
                 CreateLevel(level);
             }
 
@@ -180,10 +203,7 @@ void HorizonMoveObject(TObject *obj)
 }
 
 void setCur (int x, int y){
-    COORD coord;
-    coord.X =x;
-    coord.Y = y;
-    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
+    move(y, x);
 }
 
 void MarioCollision()
@@ -255,7 +275,10 @@ void HorizonMoveMap(float dx){
 
 void CreateLevel(int lvl){
 
-    system("color 9F");
+    attron(COLOR_PAIR(3));
+    bkgd(' ' | COLOR_PAIR(3));
+    clear();
+    refresh();
 
     brickLength = 0;
     brick = (TObject*)realloc(brick, 0);
@@ -319,14 +342,30 @@ void CreateLevel(int lvl){
 }
 
 int main()
-{
+{   
+    initscr();
+    start_color();
+    use_default_colors();
+
+    init_pair(1, COLOR_WHITE, COLOR_RED); 
+    init_pair(2, COLOR_WHITE, COLOR_GREEN);
+    init_pair(3, COLOR_WHITE, COLOR_BLUE); 
+    noecho();
+    curs_set(FALSE);
+    keypad(stdscr, TRUE);
+    nodelay(stdscr, TRUE);
     CreateLevel(level);
 
+    int ch;
     do
     {
-        ClearMap();if ((mario.IsFly == FALSE) && (GetKeyState(VK_SPACE) < 0)) mario.vertSpeed = -1;
-        if(GetKeyState ('A') < 0) HorizonMoveMap(1);
-        if(GetKeyState ('D') < 0) HorizonMoveMap(-1);
+        ClearMap();
+
+        ch = getch();
+
+        if ((mario.IsFly == FALSE) && (ch == ' ')) mario.vertSpeed = -1;
+        if (ch == 'a' || ch == 'A') HorizonMoveMap(1);
+        if (ch == 'd' || ch == 'D') HorizonMoveMap(-1);
 
         if (mario.y > mapHeight) PlayerDead();
 
@@ -357,13 +396,14 @@ int main()
         setCur(0,0);
         ShowMap();
 
-        Sleep(10);
+        usleep(10000);
 
     }
-    while (GetKeyState(VK_ESCAPE)>=0);
+    while (ch != 27);
 
     free(brick);
     free(moving);
 
+    endwin();
     return 0;
 }

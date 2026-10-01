@@ -118,11 +118,30 @@ void VertMoveObject(TObject *obj){
         }
 }
 
-void DeleteMoving(int i)
-{
+void DeleteMoving(int i) {
+    if (movingLength <= 0)
+        return;
+
     movingLength--;
-    moving[i] = moving[movingLength];
-    moving = (TObject*)realloc(moving, sizeof(*moving) * movingLength);
+
+    if (i != movingLength)
+        moving[i] = moving[movingLength];
+
+    if (movingLength == 0)
+    {
+        free(moving);
+        moving = NULL;
+    }
+    else
+    {
+        TObject *temp = (TObject*)realloc(
+            moving,
+            sizeof(TObject) * movingLength
+        );
+
+        if (temp != NULL)
+            moving = temp;
+    }
 }
 
 void MarioCollision()
@@ -201,12 +220,15 @@ void PutObjectOnMap(TObject obj){
 void PutScoreOnMap()
 {
     char c[30];
-    sprintf(c, "Score: %d", score);
+    sprintf(c, "Score: %d  Level: %d", score, level);
 
     int len = strlen(c);
 
     for (int i = 0; i < len; i++)
-        map[1][i + 5] = c[i];
+    {
+        if (i + 2 < mapWidth)
+            map[1][i + 2] = c[i];
+}
 }
 
 void setCur (int x, int y){
@@ -251,8 +273,6 @@ TObject *GetNewMoving()
 }
 
 void CreateLevel(int lvl){
-
-    system("color 9F");
 
     brickLength = 0;
     brick = (TObject*)realloc(brick, 0);
@@ -400,6 +420,8 @@ int main() {
 
     free(brick);
     free(moving);
+
+    endwin();
 
     return 0;
 }

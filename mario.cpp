@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <windows.h>
+#include <ncurses.h>
+#include <unistd.h>
 #include <string.h>
 
 #define mapWidth 80
@@ -11,7 +12,7 @@ typedef struct SObject{
     float x,y;
     float width, height;
     float vertSpeed;
-    BOOL IsFly;
+    bool IsFly;
     char cType;
 
 
@@ -23,10 +24,10 @@ char map[mapHeight][mapWidth + 1];
 TObject mario;
 
 TObject *brick = NULL;
-int brickLength;
+int brickLength = 0;
 
 TObject *moving = NULL;
-int movingLength;
+int movingLength = 0;
 
 int level = 1;
 int score = 0;
@@ -34,13 +35,12 @@ int maxLvl = 3;
 
 void ClearMap() {
 
-    for (int i = 0; i < mapWidth; i++)
-        map[0][i] = ' ';
-
-    map[0][mapWidth] = '\0';
-
-    for (int j = 1; j < mapHeight; j++)
-        sprintf(map[j], map[0]);
+    for (int i = 0; i < mapHeight; i++){
+        for (int j = 0; j < mapWidth; j++)
+            map[i][j] = ' ';
+        map[i][mapWidth]  = '\0';
+    }
+    
 }
 
 void ShowMap() {
@@ -71,7 +71,7 @@ void InitObject(TObject *obj, float xPos, float yPos, float oWidth, float oHeigh
 }
 
 void CreateLevel(int lvl);
-BOOL IsCollision(TObject o1, TObject o2);
+bool IsCollision(TObject o1, TObject o2);
 TObject *GetNewMoving();
 
 void PlayerDead()
@@ -182,7 +182,7 @@ void HorizonMoveObject(TObject *obj)
     }
 }
 
-BOOL IsPosInMap(int x, int y){
+bool IsPosInMap(int x, int y){
 
     return ( (x >=0) && (x< mapWidth) && (y >= 0) && (y < mapHeight) );
 }
@@ -236,7 +236,7 @@ void HorizonMoveMap(float dx){
         moving[i].x +=dx;
 }
 
-BOOL IsCollision(TObject o1, TObject o2){
+bool IsCollision(TObject o1, TObject o2){
     return ((o1.x + o1.width)> o2.x) && (o1.x < (o2.x + o2.width)) &&
            ((o1.y + o1.height)> o2.y) && (o1.y < (o2.y + o2.height));
 }

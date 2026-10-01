@@ -63,7 +63,7 @@ void InitObject(TObject *obj, float xPos, float yPos, float oWidth, float oHeigh
     (*obj).width = oWidth;
     (*obj).height = oHeight;
     (*obj).vertSpeed = 0;
-    (*obj).IsFly = FALSE;
+    (*obj).IsFly = false;
     (*obj).cType = inType;
 
 
@@ -76,14 +76,13 @@ TObject *GetNewMoving();
 
 void PlayerDead()
 {
-    system("color 4F");
-    Sleep(500);
+    napms(500);
     CreateLevel(level);
 }
 
 void VertMoveObject(TObject *obj){
 
-    (*obj).IsFly = TRUE;
+    (*obj).IsFly = true;
     (*obj).vertSpeed += 0.05;
 
     SetObjectPos (obj, (*obj).x, (*obj).y + (*obj).vertSpeed);
@@ -92,7 +91,7 @@ void VertMoveObject(TObject *obj){
         if (IsCollision(*obj, brick[i])){
 
             if ((*obj).vertSpeed > 0)
-                (*obj).IsFly = FALSE;
+                (*obj).IsFly = false;
 
 
             if ((brick[i].cType == '?') && ((*obj).vertSpeed < 0) && (obj == &mario))
@@ -111,8 +110,7 @@ void VertMoveObject(TObject *obj){
                 level++;
                 if (level > maxLvl) level = 1;
 
-                system("color 2F");
-                Sleep(500);
+                napms(500);
                 CreateLevel(level);
             }
 
@@ -134,7 +132,7 @@ void MarioCollision()
         {
             if (moving[i].cType == 'o')
             {
-                if ((mario.IsFly == TRUE) &&
+                if ((mario.IsFly == true) &&
                     (mario.vertSpeed > 0) &&
                     (mario.y + mario.height < moving[i].y + moving[i].height * 0.5))
                 {
@@ -174,7 +172,7 @@ void HorizonMoveObject(TObject *obj)
         TObject tmp = *obj;
         VertMoveObject(&tmp);
 
-        if (tmp.IsFly == TRUE)
+        if (tmp.IsFly == true)
         {
             obj[0].x -= obj[0].horizSpeed;
             obj[0].horizSpeed = -obj[0].horizSpeed;
@@ -212,10 +210,7 @@ void PutScoreOnMap()
 }
 
 void setCur (int x, int y){
-    COORD coord;
-    coord.X =x;
-    coord.Y = y;
-    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
+    move(y, x);
 }
 
 void HorizonMoveMap(float dx){
@@ -321,18 +316,55 @@ void CreateLevel(int lvl){
 }
 
 int main() {
-
+    initscr();
+    noecho();
+    cbreak();
+    keypad(stdscr, TRUE);
+    nodelay(stdscr, TRUE);
+    curs_set(0);
+    timeout(0);
     CreateLevel(level);
 
-    do
-    {
-        ClearMap();if ((mario.IsFly == FALSE) && (GetKeyState(VK_SPACE) < 0)) mario.vertSpeed = -1;
-        if(GetKeyState ('A') < 0) HorizonMoveMap(1);
-        if(GetKeyState ('D') < 0) HorizonMoveMap(-1);
+    
+    bool running = true;
 
-        if (mario.y > mapHeight) PlayerDead();
+    while (running)
+    {
+        ClearMap();
+        int key;
+
+        while ((key = getch()) != ERR)
+        {
+            if (key == 27)
+            {
+                running = false;
+                break;
+            }
+
+            if (key == 'a' || key == 'A' || key == KEY_LEFT)
+            {
+                HorizonMoveMap(2.0f);
+            }
+
+            if (key == 'd' || key == 'D' || key == KEY_RIGHT)
+            {
+                HorizonMoveMap(-2.0f);
+            }
+
+            if (key == ' ' && mario.IsFly == false)
+            {
+                mario.vertSpeed = -1.2f;
+            }
+        }
+
+        if (!running)
+            break;
+
+        if (mario.y > mapHeight)
+            PlayerDead();
 
         VertMoveObject(&mario);
+
         MarioCollision();
 
         for (int i = 0; i < brickLength; i++)
@@ -356,13 +388,15 @@ int main() {
         PutObjectOnMap(mario);
         PutScoreOnMap();
 
-        setCur(0,0);
-        ShowMap();
+        move(0, 0);
 
-        Sleep(10);
+        for (int j = 0; j < mapHeight; j++)
+            printw("%s\n", map[j]);
 
+        refresh();
+
+        usleep(16000);
     }
-    while (GetKeyState(VK_ESCAPE)>=0);
 
     free(brick);
     free(moving);

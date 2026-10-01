@@ -77,6 +77,7 @@ TObject *GetNewMoving();
 void PlayerDead()
 {
     napms(500);
+    score = 0;
     CreateLevel(level);
 }
 

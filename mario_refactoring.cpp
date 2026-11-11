@@ -354,8 +354,8 @@ void playerDead(int* level, int* score, int maxLvl,
 {
     (void)map;
 
-    
     napms(500);
+    *score = 0;
     createLevel(*level, score, level, maxLvl, brick, brickLength, moving, movingLength, mario);
 }
 

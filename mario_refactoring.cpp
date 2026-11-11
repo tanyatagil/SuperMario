@@ -81,7 +81,7 @@ void initObject(GameObject *obj, float xPos, float yPos, float oWidth, float oHe
 
 void createLevel(int lvl);
 bool isCollision(GameObject o1, GameObject o2);
-GameObject *getNewMoving();
+GameObject *getNewMoving(GameObject **objects, int *objectCount);
 GameObject *ResizeObjects(GameObject *objects, int count);
 
 void playerDead()
@@ -108,7 +108,7 @@ void vertMoveObject(GameObject *obj){
             if ((brick[i].type == ObjectType::questionBlock) && ((*obj).verticalSpeed < 0) && (obj == &mario))
             {
                 brick[i].type = ObjectType::platform;
-                initObject(getNewMoving(), brick[i].x, brick[i].y - 3, 3, 2, ObjectType::collectible);
+                initObject(getNewMoving(&moving, &movingLength), brick[i].x, brick[i].y - 3, 3, 2, ObjectType::collectible);
                 moving[movingLength - 1].verticalSpeed = -0.7;
             }
 
@@ -128,23 +128,23 @@ void vertMoveObject(GameObject *obj){
         }
 }
 
-void deleteMoving(int i) {
-    if (movingLength <= 0)
+void deleteMoving(int i, GameObject **objects, int *objectCount) {
+    if (*objectCount <= 0)
         return;
 
-    movingLength--;
+    (*objectCount)--;
 
-    if (i != movingLength)
-        moving[i] = moving[movingLength];
+    if (i != *objectCount)
+        (*objects)[i] = (*objects)[*objectCount];
 
-    if (movingLength == 0)
+    if (*objectCount == 0)
     {
-        free(moving);
-        moving = NULL;
+        free(*objects);
+        *objects = NULL;
     }
     else
     {
-        moving = ResizeObjects(moving, movingLength);
+        *objects = ResizeObjects(*objects, *objectCount);
     }
 }
 
@@ -160,7 +160,7 @@ void marioCollision()
                     (mario.y + mario.height < moving[i].y + moving[i].height * 0.5))
                 {
                     score += 50;
-                    deleteMoving(i);
+                    deleteMoving(i, &moving, &movingLength);
                     i--;
                     continue;
                 }
@@ -171,7 +171,7 @@ void marioCollision()
             if (moving[i].type == ObjectType::collectible)
             {
                 score += 100;
-                deleteMoving(i);
+                deleteMoving(i, &moving, &movingLength);
                 i--;
                 continue;
             }
@@ -262,18 +262,28 @@ bool isCollision(GameObject o1, GameObject o2){
            ((o1.y + o1.height)> o2.y) && (o1.y < (o2.y + o2.height));
 }
 
+GameObject *getNewBrick(GameObject **objects, int *objectCount)
+{
+    (*objectCount)++;
+    *objects = ResizeObjects(*objects, *objectCount);
+    return *objects + *objectCount - 1;
+}
+
 GameObject *getNewBrick()
 {
-    brickLength++;
-    brick = ResizeObjects(brick, brickLength);
-    return brick + brickLength - 1;
+    return getNewBrick(&brick, &brickLength);
+}
+
+GameObject *getNewMoving(GameObject **objects, int *objectCount)
+{
+    (*objectCount)++;
+    *objects = ResizeObjects(*objects, *objectCount);
+    return *objects + *objectCount - 1;
 }
 
 GameObject *getNewMoving()
 {
-    movingLength++;
-    moving = ResizeObjects(moving, movingLength);
-    return moving + movingLength - 1;
+    return getNewMoving(&moving, &movingLength);
 }
 
 GameObject *ResizeObjects(GameObject *objects, int count)
@@ -425,7 +435,7 @@ int main() {
 
             if (moving[i].y > MAP_HEIGHT)
             {
-                deleteMoving(i);
+                deleteMoving(i, &moving, &movingLength);
                 i--;
                 continue;
             }

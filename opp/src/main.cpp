@@ -1,21 +1,29 @@
 #include "GameController.hpp"
 #include "Map.hpp"
 
-#include <windows.h>
+#include <ncurses.h>
 
 int main() {
+    initscr();
+    noecho();
+    cbreak();
+    keypad(stdscr, TRUE);
+    nodelay(stdscr, TRUE);
+    curs_set(0);
+
     GameController game;
     game.load(1);
 
     Map map;
 
-    while (GetKeyState(VK_ESCAPE) >= 0) {
+    while (!game.quitRequested) {
         map.clear();
         game.update();
         game.draw(map);
         map.render();
-        Sleep(10);
+        napms(10);
     }
 
+    endwin();
     return 0;
 }

@@ -5,11 +5,8 @@
 #include "QuestionBrick.hpp"
 #include "FinishBrick.hpp"
 #include "Enemy.hpp"
-#include <cstdlib>
 
 void LevelCreator::load(GameController& level, int levelNumber) {
-    system("color 9F");
-
     level.bricks.clear();
     level.entities.clear();
     level.mario.reset();

@@ -82,7 +82,9 @@ void Movement::scrollMap(GameController& level, float dx) {
     level.mario.x -= dx;
 
     for (auto& brick : level.bricks) {
-        if (level.mario.collidesWith(*brick)) {
+        const bool standingOnTop =
+            level.mario.y + level.mario.height <= brick->y + 0.1f;
+        if (level.mario.collidesWith(*brick) && !standingOnTop) {
             level.mario.x += dx;
             return;
         }

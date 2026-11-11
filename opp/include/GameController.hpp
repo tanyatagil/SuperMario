@@ -18,6 +18,7 @@ public:
     int maxLevel = 3;
     bool needReload = false;
     bool nextLevel = false;
+    bool quitRequested = false;
 
     template<typename T, typename... Args>
     T* addBrick(Args&&... args) {

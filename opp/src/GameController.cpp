@@ -1,16 +1,14 @@
 #include "GameController.hpp"
 #include "LevelCreator.hpp"
 
-#include <cstdlib>
-#include <windows.h>
+#include <ncurses.h>
 
 void GameController::load(int levelNumber) {
     LevelCreator::load(*this, levelNumber);
 }
 
 void GameController::playerDead() {
-    system("color 4F");
-    Sleep(500);
+    napms(500);
     needReload = true;
 }
 
@@ -21,8 +19,7 @@ void GameController::goNextLevel() {
         levelNum = 1;
     }
 
-    system("color 2F");
-    Sleep(500);
+    napms(500);
     load(levelNum);
 }
 

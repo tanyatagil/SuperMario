@@ -4,7 +4,7 @@
 #include "Movement.hpp"
 #include "constants.hpp"
 
-#include <windows.h>
+#include <ncurses.h>
 Mario::Mario()
     : GameObject(39, 10, 3, 3, '@') {}
 
@@ -17,16 +17,19 @@ void Mario::reset(float newX, float newY) {
 }
 
 void Mario::handleInput(GameController& level) {
-    if (!isFlying && GetKeyState(VK_SPACE) < 0) {
-        vertSpeed = -1.0f;
-    }
-
-    if (GetKeyState('A') < 0) {
-        Movement::scrollMap(level, 1);
-    }
-
-    if (GetKeyState('D') < 0) {
-        Movement::scrollMap(level, -1);
+    int key;
+    while ((key = getch()) != ERR) {
+        if (key == 27) {
+            level.quitRequested = true;
+            return;
+        }
+        if (key == ' ' && !isFlying) {
+            vertSpeed = -1.0f;
+        } else if (key == 'a' || key == 'A' || key == KEY_LEFT) {
+            Movement::scrollMap(level, 2.5f);
+        } else if (key == 'd' || key == 'D' || key == KEY_RIGHT) {
+            Movement::scrollMap(level, -2.5f);
+        }
     }
 }
 

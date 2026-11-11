@@ -9,12 +9,22 @@
 #define MAP_HEIGHT 25
 #define MAX_LEVEL 3
 
+enum class ObjectType : char {
+    player = '@',
+    brick = '#',
+    questionBlock = '?',
+    platform = '-',
+    goal = '+',
+    enemy = 'o',
+    collectible = '$'
+};
+
 typedef struct GameObject {
     float x,y;
     float width, height;
     float verticalSpeed;
     bool isFlying;
-    char type;
+    ObjectType type;
 
 
     float horizontalSpeed;
@@ -57,7 +67,7 @@ void SetObjectPos(GameObject *obj, float xPos, float yPos){
     (*obj).y=yPos;
 }
 
-void InitObject(GameObject *obj, float xPos, float yPos, float oWidth, float oHeight, char inType){
+void InitObject(GameObject *obj, float xPos, float yPos, float oWidth, float oHeight, ObjectType inType){
 
     SetObjectPos(obj, xPos, yPos);
     (*obj).width = oWidth;
@@ -96,17 +106,17 @@ void VertMoveObject(GameObject *obj){
                 (*obj).isFlying = false;
 
 
-            if ((brick[i].type == '?') && ((*obj).verticalSpeed < 0) && (obj == &mario))
+            if ((brick[i].type == ObjectType::questionBlock) && ((*obj).verticalSpeed < 0) && (obj == &mario))
             {
-                brick[i].type = '-';
-                InitObject(GetNewMoving(), brick[i].x, brick[i].y - 3, 3, 2, '$');
+                brick[i].type = ObjectType::platform;
+                InitObject(GetNewMoving(), brick[i].x, brick[i].y - 3, 3, 2, ObjectType::collectible);
                 moving[movingLength - 1].verticalSpeed = -0.7;
             }
 
             (*obj).y -= (*obj).verticalSpeed;
             (*obj).verticalSpeed = 0;
 
-            if (brick[i].type == '+')
+            if (brick[i].type == ObjectType::goal)
             {
                 level++;
                 if (level > MAX_LEVEL) level = 1;
@@ -144,7 +154,7 @@ void MarioCollision()
     for (int i = 0; i < movingLength; i++)
         if (IsCollision(mario, moving[i]))
         {
-            if (moving[i].type == 'o')
+            if (moving[i].type == ObjectType::enemy)
             {
                 if ((mario.isFlying == true) &&
                     (mario.verticalSpeed > 0) &&
@@ -159,7 +169,7 @@ void MarioCollision()
                 PlayerDead();
             }
 
-            if (moving[i].type == '$')
+            if (moving[i].type == ObjectType::collectible)
             {
                 score += 100;
                 DeleteMoving(i);
@@ -181,7 +191,7 @@ void HorizonMoveObject(GameObject *obj)
             return;
         }
 
-    if (obj[0].type == 'o')
+    if (obj[0].type == ObjectType::enemy)
     {
         GameObject tmp = *obj;
         VertMoveObject(&tmp);
@@ -209,7 +219,7 @@ void PutObjectOnMap(GameObject obj){
     for (int i = ix; i < ix + iWidht; i++)
         for (int j = iy; j < iy +iHeight; j++)
             if (IsPosInMap(i,j))
-                map[j][i] = obj.type;
+                map[j][i] = static_cast<char>(obj.type);
 }
 
 void PutScoreOnMap()
@@ -297,58 +307,58 @@ void CreateLevel(int lvl){
     movingLength = 0;
     moving = ResizeObjects(moving, 0);
 
-    InitObject(&mario, 39, 10, 3, 3, '@');
+    InitObject(&mario, 39, 10, 3, 3, ObjectType::player);
 
     if (lvl == 1)
     {
-        InitObject(GetNewBrick(), 20, 20, 40, 5, '#');
-        InitObject(GetNewBrick(), 30, 10, 5, 3, '?');
-        InitObject(GetNewBrick(), 50, 10, 5, 3, '?');
-        InitObject(GetNewBrick(), 60, 15, 40, 10, '#');
-        InitObject(GetNewBrick(), 60, 5, 10, 3, '-');
-        InitObject(GetNewBrick(), 70, 5, 5, 3, '?');
-        InitObject(GetNewBrick(), 75, 5, 5, 3, '-');
-        InitObject(GetNewBrick(), 80, 5, 5, 3, '?');
-        InitObject(GetNewBrick(), 85, 5, 10, 3, '-');
-        InitObject(GetNewBrick(), 100, 20, 20, 5, '#');
-        InitObject(GetNewBrick(), 120, 15, 10, 10, '#');
-        InitObject(GetNewBrick(), 150, 20, 40, 5, '#');
-        InitObject(GetNewBrick(), 210, 15, 10, 10, '+');
+        InitObject(GetNewBrick(), 20, 20, 40, 5, ObjectType::brick);
+        InitObject(GetNewBrick(), 30, 10, 5, 3, ObjectType::questionBlock);
+        InitObject(GetNewBrick(), 50, 10, 5, 3, ObjectType::questionBlock);
+        InitObject(GetNewBrick(), 60, 15, 40, 10, ObjectType::brick);
+        InitObject(GetNewBrick(), 60, 5, 10, 3, ObjectType::platform);
+        InitObject(GetNewBrick(), 70, 5, 5, 3, ObjectType::questionBlock);
+        InitObject(GetNewBrick(), 75, 5, 5, 3, ObjectType::platform);
+        InitObject(GetNewBrick(), 80, 5, 5, 3, ObjectType::questionBlock);
+        InitObject(GetNewBrick(), 85, 5, 10, 3, ObjectType::platform);
+        InitObject(GetNewBrick(), 100, 20, 20, 5, ObjectType::brick);
+        InitObject(GetNewBrick(), 120, 15, 10, 10, ObjectType::brick);
+        InitObject(GetNewBrick(), 150, 20, 40, 5, ObjectType::brick);
+        InitObject(GetNewBrick(), 210, 15, 10, 10, ObjectType::goal);
 
-        InitObject(GetNewMoving(), 25, 10, 3, 2, 'o');
-        InitObject(GetNewMoving(), 80, 10, 3, 2, 'o');
+        InitObject(GetNewMoving(), 25, 10, 3, 2, ObjectType::enemy);
+        InitObject(GetNewMoving(), 80, 10, 3, 2, ObjectType::enemy);
     }
 
     if (lvl == 2)
     {
-        InitObject(GetNewBrick(), 20, 20, 40, 5, '#');
-        InitObject(GetNewBrick(), 60, 15, 10, 10, '#');
-        InitObject(GetNewBrick(), 80, 20, 20, 5, '#');
-        InitObject(GetNewBrick(), 120, 15, 10, 10, '#');
-        InitObject(GetNewBrick(), 150, 20, 40, 5, '#');
-        InitObject(GetNewBrick(), 210, 15, 10, 10, '+');
+        InitObject(GetNewBrick(), 20, 20, 40, 5, ObjectType::brick);
+        InitObject(GetNewBrick(), 60, 15, 10, 10, ObjectType::brick);
+        InitObject(GetNewBrick(), 80, 20, 20, 5, ObjectType::brick);
+        InitObject(GetNewBrick(), 120, 15, 10, 10, ObjectType::brick);
+        InitObject(GetNewBrick(), 150, 20, 40, 5, ObjectType::brick);
+        InitObject(GetNewBrick(), 210, 15, 10, 10, ObjectType::goal);
 
-        InitObject(GetNewMoving(), 25, 10, 3, 2, 'o');
-        InitObject(GetNewMoving(), 80, 10, 3, 2, 'o');
-        InitObject(GetNewMoving(), 65, 10, 3, 2, 'o');
-        InitObject(GetNewMoving(), 120, 10, 3, 2, 'o');
-        InitObject(GetNewMoving(), 160, 10, 3, 2, 'o');
-        InitObject(GetNewMoving(), 175, 10, 3, 2, 'o');
+        InitObject(GetNewMoving(), 25, 10, 3, 2, ObjectType::enemy);
+        InitObject(GetNewMoving(), 80, 10, 3, 2, ObjectType::enemy);
+        InitObject(GetNewMoving(), 65, 10, 3, 2, ObjectType::enemy);
+        InitObject(GetNewMoving(), 120, 10, 3, 2, ObjectType::enemy);
+        InitObject(GetNewMoving(), 160, 10, 3, 2, ObjectType::enemy);
+        InitObject(GetNewMoving(), 175, 10, 3, 2, ObjectType::enemy);
     }
 
     if (lvl == 3)
     {
-        InitObject(GetNewBrick(), 20, 20, 40, 5, '#');
-        InitObject(GetNewBrick(), 80, 20, 15, 5, '#');
-        InitObject(GetNewBrick(), 120, 15, 15, 10, '#');
-        InitObject(GetNewBrick(), 160, 10, 15, 15, '+');
+        InitObject(GetNewBrick(), 20, 20, 40, 5, ObjectType::brick);
+        InitObject(GetNewBrick(), 80, 20, 15, 5, ObjectType::brick);
+        InitObject(GetNewBrick(), 120, 15, 15, 10, ObjectType::brick);
+        InitObject(GetNewBrick(), 160, 10, 15, 15, ObjectType::goal);
 
-        InitObject(GetNewMoving(), 25, 10, 3, 2, 'o');
-        InitObject(GetNewMoving(), 50, 10, 3, 2, 'o');
-        InitObject(GetNewMoving(), 80, 10, 3, 2, 'o');
-        InitObject(GetNewMoving(), 90, 10, 3, 2, 'o');
-        InitObject(GetNewMoving(), 120, 10, 3, 2, 'o');
-        InitObject(GetNewMoving(), 130, 10, 3, 2, 'o');
+        InitObject(GetNewMoving(), 25, 10, 3, 2, ObjectType::enemy);
+        InitObject(GetNewMoving(), 50, 10, 3, 2, ObjectType::enemy);
+        InitObject(GetNewMoving(), 80, 10, 3, 2, ObjectType::enemy);
+        InitObject(GetNewMoving(), 90, 10, 3, 2, ObjectType::enemy);
+        InitObject(GetNewMoving(), 120, 10, 3, 2, ObjectType::enemy);
+        InitObject(GetNewMoving(), 130, 10, 3, 2, ObjectType::enemy);
     }
 }
 

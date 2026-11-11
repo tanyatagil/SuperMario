@@ -73,6 +73,7 @@ void InitObject(GameObject *obj, float xPos, float yPos, float oWidth, float oHe
 void CreateLevel(int lvl);
 bool IsCollision(GameObject o1, GameObject o2);
 GameObject *GetNewMoving();
+GameObject *ResizeObjects(GameObject *objects, int count);
 
 void PlayerDead()
 {
@@ -134,13 +135,7 @@ void DeleteMoving(int i) {
     }
     else
     {
-        GameObject *temp = (GameObject*)realloc(
-            moving,
-            sizeof(GameObject) * movingLength
-        );
-
-        if (temp != NULL)
-            moving = temp;
+        moving = ResizeObjects(moving, movingLength);
     }
 }
 
@@ -261,24 +256,46 @@ bool IsCollision(GameObject o1, GameObject o2){
 GameObject *GetNewBrick()
 {
     brickLength++;
-    brick = (GameObject*)realloc(brick, sizeof(*brick) * brickLength);
+    brick = ResizeObjects(brick, brickLength);
     return brick + brickLength - 1;
 }
 
 GameObject *GetNewMoving()
 {
     movingLength++;
-    moving = (GameObject*)realloc(moving, sizeof(*moving) * movingLength);
+    moving = ResizeObjects(moving, movingLength);
     return moving + movingLength - 1;
+}
+
+GameObject *ResizeObjects(GameObject *objects, int count)
+{
+    if (count == 0)
+    {
+        free(objects);
+        return NULL;
+    }
+
+    GameObject *resized = (GameObject*)realloc(
+        objects,
+        sizeof(GameObject) * count
+    );
+
+    if (resized == NULL)
+    {
+        perror("Failed to resize game objects");
+        exit(EXIT_FAILURE);
+    }
+
+    return resized;
 }
 
 void CreateLevel(int lvl){
 
     brickLength = 0;
-    brick = (GameObject*)realloc(brick, 0);
+    brick = ResizeObjects(brick, 0);
 
     movingLength = 0;
-    moving = (GameObject*)realloc(moving, 0);
+    moving = ResizeObjects(moving, 0);
 
     InitObject(&mario, 39, 10, 3, 3, '@');
 

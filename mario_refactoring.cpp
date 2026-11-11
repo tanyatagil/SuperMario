@@ -43,7 +43,7 @@ int movingLength = 0;
 int level = 1;
 int score = 0;
 
-void ClearMap() {
+void clearMap() {
 
     for (int i = 0; i < MAP_HEIGHT; i++){
         for (int j = 0; j < MAP_WIDTH; j++)
@@ -53,7 +53,7 @@ void ClearMap() {
     
 }
 
-void ShowMap() {
+void showMap() {
 
     map[MAP_HEIGHT - 1][MAP_WIDTH - 1] = '\0';
 
@@ -61,15 +61,15 @@ void ShowMap() {
         printf("%s\n", map[j]);
 }
 
-void SetObjectPos(GameObject *obj, float xPos, float yPos){
+void setObjectPos(GameObject *obj, float xPos, float yPos){
 
     (*obj).x=xPos;
     (*obj).y=yPos;
 }
 
-void InitObject(GameObject *obj, float xPos, float yPos, float oWidth, float oHeight, ObjectType inType){
+void initObject(GameObject *obj, float xPos, float yPos, float oWidth, float oHeight, ObjectType inType){
 
-    SetObjectPos(obj, xPos, yPos);
+    setObjectPos(obj, xPos, yPos);
     (*obj).width = oWidth;
     (*obj).height = oHeight;
     (*obj).verticalSpeed = 0;
@@ -80,27 +80,27 @@ void InitObject(GameObject *obj, float xPos, float yPos, float oWidth, float oHe
     (*obj).horizontalSpeed = 0.2;
 }
 
-void CreateLevel(int lvl);
-bool IsCollision(GameObject o1, GameObject o2);
-GameObject *GetNewMoving();
+void createLevel(int lvl);
+bool isCollision(GameObject o1, GameObject o2);
+GameObject *getNewMoving();
 GameObject *ResizeObjects(GameObject *objects, int count);
 
-void PlayerDead()
+void playerDead()
 {
     napms(500);
     score = 0;
-    CreateLevel(level);
+    createLevel(level);
 }
 
-void VertMoveObject(GameObject *obj){
+void vertMoveObject(GameObject *obj){
 
     (*obj).isFlying = true;
     (*obj).verticalSpeed += 0.05;
 
-    SetObjectPos (obj, (*obj).x, (*obj).y + (*obj).verticalSpeed);
+    setObjectPos (obj, (*obj).x, (*obj).y + (*obj).verticalSpeed);
 
     for (int i=0; i< brickLength; i++)
-        if (IsCollision(*obj, brick[i])){
+        if (isCollision(*obj, brick[i])){
 
             if ((*obj).verticalSpeed > 0)
                 (*obj).isFlying = false;
@@ -109,7 +109,7 @@ void VertMoveObject(GameObject *obj){
             if ((brick[i].type == ObjectType::questionBlock) && ((*obj).verticalSpeed < 0) && (obj == &mario))
             {
                 brick[i].type = ObjectType::platform;
-                InitObject(GetNewMoving(), brick[i].x, brick[i].y - 3, 3, 2, ObjectType::collectible);
+                initObject(getNewMoving(), brick[i].x, brick[i].y - 3, 3, 2, ObjectType::collectible);
                 moving[movingLength - 1].verticalSpeed = -0.7;
             }
 
@@ -122,14 +122,14 @@ void VertMoveObject(GameObject *obj){
                 if (level > MAX_LEVEL) level = 1;
 
                 napms(500);
-                CreateLevel(level);
+                createLevel(level);
             }
 
             break;
         }
 }
 
-void DeleteMoving(int i) {
+void deleteMoving(int i) {
     if (movingLength <= 0)
         return;
 
@@ -149,10 +149,10 @@ void DeleteMoving(int i) {
     }
 }
 
-void MarioCollision()
+void marioCollision()
 {
     for (int i = 0; i < movingLength; i++)
-        if (IsCollision(mario, moving[i]))
+        if (isCollision(mario, moving[i]))
         {
             if (moving[i].type == ObjectType::enemy)
             {
@@ -161,30 +161,30 @@ void MarioCollision()
                     (mario.y + mario.height < moving[i].y + moving[i].height * 0.5))
                 {
                     score += 50;
-                    DeleteMoving(i);
+                    deleteMoving(i);
                     i--;
                     continue;
                 }
 
-                PlayerDead();
+                playerDead();
             }
 
             if (moving[i].type == ObjectType::collectible)
             {
                 score += 100;
-                DeleteMoving(i);
+                deleteMoving(i);
                 i--;
                 continue;
             }
         }
 }
 
-void HorizonMoveObject(GameObject *obj)
+void horizonMoveObject(GameObject *obj)
 {
     obj[0].x += obj[0].horizontalSpeed;
 
     for (int i = 0; i < brickLength; i++)
-        if (IsCollision(obj[0], brick[i]))
+        if (isCollision(obj[0], brick[i]))
         {
             obj[0].x -= obj[0].horizontalSpeed;
             obj[0].horizontalSpeed = -obj[0].horizontalSpeed;
@@ -194,7 +194,7 @@ void HorizonMoveObject(GameObject *obj)
     if (obj[0].type == ObjectType::enemy)
     {
         GameObject tmp = *obj;
-        VertMoveObject(&tmp);
+        vertMoveObject(&tmp);
 
         if (tmp.isFlying == true)
         {
@@ -204,12 +204,12 @@ void HorizonMoveObject(GameObject *obj)
     }
 }
 
-bool IsPosInMap(int x, int y){
+bool isPosInMap(int x, int y){
 
     return ( (x >=0) && (x< MAP_WIDTH) && (y >= 0) && (y < MAP_HEIGHT) );
 }
 
-void PutObjectOnMap(GameObject obj){
+void putObjectOnMap(GameObject obj){
 
     int ix = (int)round(obj.x);
     int iy = (int)round(obj.y);
@@ -218,11 +218,11 @@ void PutObjectOnMap(GameObject obj){
 
     for (int i = ix; i < ix + iWidht; i++)
         for (int j = iy; j < iy +iHeight; j++)
-            if (IsPosInMap(i,j))
+            if (isPosInMap(i,j))
                 map[j][i] = static_cast<char>(obj.type);
 }
 
-void PutScoreOnMap()
+void putScoreOnMap()
 {
     char c[30];
     sprintf(c, "Score: %d  Level: %d", score, level);
@@ -240,11 +240,11 @@ void setCur (int x, int y){
     move(y, x);
 }
 
-void HorizonMoveMap(float dx){
+void horizonMoveMap(float dx){
     mario.x -= dx;
 
     for (int i = 0; i < brickLength; i ++)
-        if (IsCollision(mario, brick[i])){
+        if (isCollision(mario, brick[i])){
             mario.x +=dx;
             return;
         }
@@ -258,19 +258,19 @@ void HorizonMoveMap(float dx){
         moving[i].x +=dx;
 }
 
-bool IsCollision(GameObject o1, GameObject o2){
+bool isCollision(GameObject o1, GameObject o2){
     return ((o1.x + o1.width)> o2.x) && (o1.x < (o2.x + o2.width)) &&
            ((o1.y + o1.height)> o2.y) && (o1.y < (o2.y + o2.height));
 }
 
-GameObject *GetNewBrick()
+GameObject *getNewBrick()
 {
     brickLength++;
     brick = ResizeObjects(brick, brickLength);
     return brick + brickLength - 1;
 }
 
-GameObject *GetNewMoving()
+GameObject *getNewMoving()
 {
     movingLength++;
     moving = ResizeObjects(moving, movingLength);
@@ -299,7 +299,7 @@ GameObject *ResizeObjects(GameObject *objects, int count)
     return resized;
 }
 
-void CreateLevel(int lvl){
+void createLevel(int lvl){
 
     brickLength = 0;
     brick = ResizeObjects(brick, 0);
@@ -307,58 +307,58 @@ void CreateLevel(int lvl){
     movingLength = 0;
     moving = ResizeObjects(moving, 0);
 
-    InitObject(&mario, 39, 10, 3, 3, ObjectType::player);
+    initObject(&mario, 39, 10, 3, 3, ObjectType::player);
 
     if (lvl == 1)
     {
-        InitObject(GetNewBrick(), 20, 20, 40, 5, ObjectType::brick);
-        InitObject(GetNewBrick(), 30, 10, 5, 3, ObjectType::questionBlock);
-        InitObject(GetNewBrick(), 50, 10, 5, 3, ObjectType::questionBlock);
-        InitObject(GetNewBrick(), 60, 15, 40, 10, ObjectType::brick);
-        InitObject(GetNewBrick(), 60, 5, 10, 3, ObjectType::platform);
-        InitObject(GetNewBrick(), 70, 5, 5, 3, ObjectType::questionBlock);
-        InitObject(GetNewBrick(), 75, 5, 5, 3, ObjectType::platform);
-        InitObject(GetNewBrick(), 80, 5, 5, 3, ObjectType::questionBlock);
-        InitObject(GetNewBrick(), 85, 5, 10, 3, ObjectType::platform);
-        InitObject(GetNewBrick(), 100, 20, 20, 5, ObjectType::brick);
-        InitObject(GetNewBrick(), 120, 15, 10, 10, ObjectType::brick);
-        InitObject(GetNewBrick(), 150, 20, 40, 5, ObjectType::brick);
-        InitObject(GetNewBrick(), 210, 15, 10, 10, ObjectType::goal);
+        initObject(getNewBrick(), 20, 20, 40, 5, ObjectType::brick);
+        initObject(getNewBrick(), 30, 10, 5, 3, ObjectType::questionBlock);
+        initObject(getNewBrick(), 50, 10, 5, 3, ObjectType::questionBlock);
+        initObject(getNewBrick(), 60, 15, 40, 10, ObjectType::brick);
+        initObject(getNewBrick(), 60, 5, 10, 3, ObjectType::platform);
+        initObject(getNewBrick(), 70, 5, 5, 3, ObjectType::questionBlock);
+        initObject(getNewBrick(), 75, 5, 5, 3, ObjectType::platform);
+        initObject(getNewBrick(), 80, 5, 5, 3, ObjectType::questionBlock);
+        initObject(getNewBrick(), 85, 5, 10, 3, ObjectType::platform);
+        initObject(getNewBrick(), 100, 20, 20, 5, ObjectType::brick);
+        initObject(getNewBrick(), 120, 15, 10, 10, ObjectType::brick);
+        initObject(getNewBrick(), 150, 20, 40, 5, ObjectType::brick);
+        initObject(getNewBrick(), 210, 15, 10, 10, ObjectType::goal);
 
-        InitObject(GetNewMoving(), 25, 10, 3, 2, ObjectType::enemy);
-        InitObject(GetNewMoving(), 80, 10, 3, 2, ObjectType::enemy);
+        initObject(getNewMoving(), 25, 10, 3, 2, ObjectType::enemy);
+        initObject(getNewMoving(), 80, 10, 3, 2, ObjectType::enemy);
     }
 
     if (lvl == 2)
     {
-        InitObject(GetNewBrick(), 20, 20, 40, 5, ObjectType::brick);
-        InitObject(GetNewBrick(), 60, 15, 10, 10, ObjectType::brick);
-        InitObject(GetNewBrick(), 80, 20, 20, 5, ObjectType::brick);
-        InitObject(GetNewBrick(), 120, 15, 10, 10, ObjectType::brick);
-        InitObject(GetNewBrick(), 150, 20, 40, 5, ObjectType::brick);
-        InitObject(GetNewBrick(), 210, 15, 10, 10, ObjectType::goal);
+        initObject(getNewBrick(), 20, 20, 40, 5, ObjectType::brick);
+        initObject(getNewBrick(), 60, 15, 10, 10, ObjectType::brick);
+        initObject(getNewBrick(), 80, 20, 20, 5, ObjectType::brick);
+        initObject(getNewBrick(), 120, 15, 10, 10, ObjectType::brick);
+        initObject(getNewBrick(), 150, 20, 40, 5, ObjectType::brick);
+        initObject(getNewBrick(), 210, 15, 10, 10, ObjectType::goal);
 
-        InitObject(GetNewMoving(), 25, 10, 3, 2, ObjectType::enemy);
-        InitObject(GetNewMoving(), 80, 10, 3, 2, ObjectType::enemy);
-        InitObject(GetNewMoving(), 65, 10, 3, 2, ObjectType::enemy);
-        InitObject(GetNewMoving(), 120, 10, 3, 2, ObjectType::enemy);
-        InitObject(GetNewMoving(), 160, 10, 3, 2, ObjectType::enemy);
-        InitObject(GetNewMoving(), 175, 10, 3, 2, ObjectType::enemy);
+        initObject(getNewMoving(), 25, 10, 3, 2, ObjectType::enemy);
+        initObject(getNewMoving(), 80, 10, 3, 2, ObjectType::enemy);
+        initObject(getNewMoving(), 65, 10, 3, 2, ObjectType::enemy);
+        initObject(getNewMoving(), 120, 10, 3, 2, ObjectType::enemy);
+        initObject(getNewMoving(), 160, 10, 3, 2, ObjectType::enemy);
+        initObject(getNewMoving(), 175, 10, 3, 2, ObjectType::enemy);
     }
 
     if (lvl == 3)
     {
-        InitObject(GetNewBrick(), 20, 20, 40, 5, ObjectType::brick);
-        InitObject(GetNewBrick(), 80, 20, 15, 5, ObjectType::brick);
-        InitObject(GetNewBrick(), 120, 15, 15, 10, ObjectType::brick);
-        InitObject(GetNewBrick(), 160, 10, 15, 15, ObjectType::goal);
+        initObject(getNewBrick(), 20, 20, 40, 5, ObjectType::brick);
+        initObject(getNewBrick(), 80, 20, 15, 5, ObjectType::brick);
+        initObject(getNewBrick(), 120, 15, 15, 10, ObjectType::brick);
+        initObject(getNewBrick(), 160, 10, 15, 15, ObjectType::goal);
 
-        InitObject(GetNewMoving(), 25, 10, 3, 2, ObjectType::enemy);
-        InitObject(GetNewMoving(), 50, 10, 3, 2, ObjectType::enemy);
-        InitObject(GetNewMoving(), 80, 10, 3, 2, ObjectType::enemy);
-        InitObject(GetNewMoving(), 90, 10, 3, 2, ObjectType::enemy);
-        InitObject(GetNewMoving(), 120, 10, 3, 2, ObjectType::enemy);
-        InitObject(GetNewMoving(), 130, 10, 3, 2, ObjectType::enemy);
+        initObject(getNewMoving(), 25, 10, 3, 2, ObjectType::enemy);
+        initObject(getNewMoving(), 50, 10, 3, 2, ObjectType::enemy);
+        initObject(getNewMoving(), 80, 10, 3, 2, ObjectType::enemy);
+        initObject(getNewMoving(), 90, 10, 3, 2, ObjectType::enemy);
+        initObject(getNewMoving(), 120, 10, 3, 2, ObjectType::enemy);
+        initObject(getNewMoving(), 130, 10, 3, 2, ObjectType::enemy);
     }
 }
 
@@ -370,14 +370,14 @@ int main() {
     nodelay(stdscr, TRUE);
     curs_set(0);
     timeout(0);
-    CreateLevel(level);
+    createLevel(level);
 
     
     bool running = true;
 
     while (running)
     {
-        ClearMap();
+        clearMap();
         int key;
 
         while ((key = getch()) != ERR)
@@ -390,12 +390,12 @@ int main() {
 
             if (key == 'a' || key == 'A' || key == KEY_LEFT)
             {
-                HorizonMoveMap(2.0f);
+                horizonMoveMap(2.0f);
             }
 
             if (key == 'd' || key == 'D' || key == KEY_RIGHT)
             {
-                HorizonMoveMap(-2.0f);
+                horizonMoveMap(-2.0f);
             }
 
             if (key == ' ' && mario.isFlying == false)
@@ -408,32 +408,32 @@ int main() {
             break;
 
         if (mario.y > MAP_HEIGHT)
-            PlayerDead();
+            playerDead();
 
-        VertMoveObject(&mario);
+        vertMoveObject(&mario);
 
-        MarioCollision();
+        marioCollision();
 
         for (int i = 0; i < brickLength; i++)
-            PutObjectOnMap(brick[i]);
+            putObjectOnMap(brick[i]);
 
         for (int i = 0; i < movingLength; i++)
         {
-            VertMoveObject(moving + i);
-            HorizonMoveObject(moving + i);
+            vertMoveObject(moving + i);
+            horizonMoveObject(moving + i);
 
             if (moving[i].y > MAP_HEIGHT)
             {
-                DeleteMoving(i);
+                deleteMoving(i);
                 i--;
                 continue;
             }
 
-            PutObjectOnMap(moving[i]);
+            putObjectOnMap(moving[i]);
         }
 
-        PutObjectOnMap(mario);
-        PutScoreOnMap();
+        putObjectOnMap(mario);
+        putScoreOnMap();
 
         move(0, 0);
 

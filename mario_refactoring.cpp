@@ -31,7 +31,6 @@ typedef struct GameObject {
 
 } GameObject;
 
-char map[MAP_HEIGHT][MAP_WIDTH + 1];
 GameObject mario;
 
 GameObject *brick = NULL;
@@ -43,22 +42,22 @@ int movingLength = 0;
 int level = 1;
 int score = 0;
 
-void clearMap() {
+void clearMap(char currentMap[MAP_HEIGHT][MAP_WIDTH + 1]) {
 
     for (int i = 0; i < MAP_HEIGHT; i++){
         for (int j = 0; j < MAP_WIDTH; j++)
-            map[i][j] = ' ';
-        map[i][MAP_WIDTH]  = '\0';
+            currentMap[i][j] = ' ';
+        currentMap[i][MAP_WIDTH]  = '\0';
     }
     
 }
 
-void showMap() {
+void showMap(char currentMap[MAP_HEIGHT][MAP_WIDTH + 1]) {
 
-    map[MAP_HEIGHT - 1][MAP_WIDTH - 1] = '\0';
+    currentMap[MAP_HEIGHT - 1][MAP_WIDTH - 1] = '\0';
 
     for (int j = 0; j < MAP_HEIGHT;j++)
-        printf("%s\n", map[j]);
+        printf("%s\n", currentMap[j]);
 }
 
 void setObjectPos(GameObject *obj, float xPos, float yPos){
@@ -209,7 +208,7 @@ bool isPosInMap(int x, int y){
     return ( (x >=0) && (x< MAP_WIDTH) && (y >= 0) && (y < MAP_HEIGHT) );
 }
 
-void putObjectOnMap(GameObject obj){
+void putObjectOnMap(GameObject obj, char currentMap[MAP_HEIGHT][MAP_WIDTH + 1]){
 
     int ix = (int)round(obj.x);
     int iy = (int)round(obj.y);
@@ -219,20 +218,20 @@ void putObjectOnMap(GameObject obj){
     for (int i = ix; i < ix + iWidht; i++)
         for (int j = iy; j < iy +iHeight; j++)
             if (isPosInMap(i,j))
-                map[j][i] = static_cast<char>(obj.type);
+                currentMap[j][i] = static_cast<char>(obj.type);
 }
 
-void putScoreOnMap()
+void putScoreOnMap(int currentScore, char currentMap[MAP_HEIGHT][MAP_WIDTH + 1])
 {
     char c[30];
-    sprintf(c, "Score: %d  Level: %d", score, level);
+    sprintf(c, "Score: %d  Level: %d", currentScore, level);
 
     int len = strlen(c);
 
     for (int i = 0; i < len; i++)
     {
         if (i + 2 < MAP_WIDTH)
-            map[1][i + 2] = c[i];
+            currentMap[1][i + 2] = c[i];
 }
 }
 
@@ -363,6 +362,8 @@ void createLevel(int lvl){
 }
 
 int main() {
+    char currentMap[MAP_HEIGHT][MAP_WIDTH + 1];
+
     initscr();
     noecho();
     cbreak();
@@ -377,7 +378,7 @@ int main() {
 
     while (running)
     {
-        clearMap();
+        clearMap(currentMap);
         int key;
 
         while ((key = getch()) != ERR)
@@ -415,7 +416,7 @@ int main() {
         marioCollision();
 
         for (int i = 0; i < brickLength; i++)
-            putObjectOnMap(brick[i]);
+            putObjectOnMap(brick[i], currentMap);
 
         for (int i = 0; i < movingLength; i++)
         {
@@ -429,16 +430,16 @@ int main() {
                 continue;
             }
 
-            putObjectOnMap(moving[i]);
+            putObjectOnMap(moving[i], currentMap);
         }
 
-        putObjectOnMap(mario);
-        putScoreOnMap();
+        putObjectOnMap(mario, currentMap);
+        putScoreOnMap(score, currentMap);
 
         move(0, 0);
 
         for (int j = 0; j < MAP_HEIGHT; j++)
-            printw("%s\n", map[j]);
+            printw("%s\n", currentMap[j]);
 
         refresh();
 

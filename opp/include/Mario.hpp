@@ -11,4 +11,8 @@ public:
     void reset(float newX = 39, float newY = 10);
     void handleInput(GameController& level);
     void update(GameController& level) override;
+
+private:
+    int horizontalDirection = 0;
+    float movementFrames = 0.0f;
 };

@@ -13,7 +13,6 @@ int main() {
 
     GameController game;
     game.load(1);
-
     Map map;
 
     while (!game.quitRequested) {

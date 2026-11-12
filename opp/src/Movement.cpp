@@ -4,10 +4,14 @@
 #include "GameObject.hpp"
 #include "GameController.hpp"
 
+#include <algorithm>
+#include <cmath>
+
 bool Movement::applyGravity(GameObject& object, GameController& level) {
     object.isFlying = true;
     object.vertSpeed += 0.05f;
     object.y += object.vertSpeed;
+    bool reachedFinish = false;
 
     for (auto& brick : level.bricks) {
         if (!object.collidesWith(*brick)) {
@@ -30,12 +34,16 @@ bool Movement::applyGravity(GameObject& object, GameController& level) {
 
         object.vertSpeed = 0;
 
-        if (brick->cType == '+') {
-            level.goNextLevel();
-            return false;
+        if (brick->cType == '+' && &object == &level.mario) {
+            reachedFinish = true;
         }
 
         break;
+    }
+
+    if (reachedFinish) {
+        level.goNextLevel();
+        return false;
     }
 
     return true;
@@ -79,24 +87,37 @@ void Movement::applyHorizontalMove(GameObject& object, GameController& level) {
 }
 
 void Movement::scrollMap(GameController& level, float dx) {
-    level.mario.x -= dx;
+    const float direction = dx < 0 ? -1.0f : 1.0f;
+    float remaining = std::abs(dx);
 
-    for (auto& brick : level.bricks) {
-        const bool standingOnTop =
-            level.mario.y + level.mario.height <= brick->y + 0.1f;
-        if (level.mario.collidesWith(*brick) && !standingOnTop) {
-            level.mario.x += dx;
+    while (remaining > 0.0f) {
+        const float step = direction * std::min(0.5f, remaining);
+        level.mario.x -= step;
+
+        bool blocked = false;
+        for (auto& brick : level.bricks) {
+            const bool standingOnTop =
+                level.mario.y + level.mario.height <= brick->y + 0.1f;
+            if (level.mario.collidesWith(*brick) && !standingOnTop) {
+                blocked = true;
+                break;
+            }
+        }
+
+        if (blocked) {
+            level.mario.x += step;
             return;
         }
-    }
 
-    level.mario.x += dx;
+        level.mario.x += step;
 
-    for (auto& brick : level.bricks) {
-        brick->x += dx;
-    }
+        for (auto& brick : level.bricks) {
+            brick->x += step;
+        }
+        for (auto& entity : level.entities) {
+            entity->x += step;
+        }
 
-    for (auto& entity : level.entities) {
-        entity->x += dx;
+        remaining -= std::abs(step);
     }
 }

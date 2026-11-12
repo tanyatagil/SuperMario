@@ -8,6 +8,7 @@ void GameController::load(int levelNumber) {
 }
 
 void GameController::playerDead() {
+    score = 0;
     napms(500);
     needReload = true;
 }

@@ -26,15 +26,22 @@ void Mario::handleInput(GameController& level) {
         if (key == ' ' && !isFlying) {
             vertSpeed = -1.0f;
         } else if (key == 'a' || key == 'A' || key == KEY_LEFT) {
-            Movement::scrollMap(level, 2.5f);
+            horizontalDirection = 1;
+            movementFrames = 24.5f;
         } else if (key == 'd' || key == 'D' || key == KEY_RIGHT) {
-            Movement::scrollMap(level, -2.5f);
+            horizontalDirection = -1;
+            movementFrames = 24.5f;
         }
     }
 }
 
 void Mario::update(GameController& level) {
     handleInput(level);
+
+    if (movementFrames > 0.0f) {
+        Movement::scrollMap(level, horizontalDirection * 0.5f);
+        movementFrames -= 1.0f;
+    }
 
     if (y > MAP_H) {
         level.playerDead();

@@ -45,8 +45,8 @@ void LevelCreator::loadFirstLevel(GameController& level) {
     level.addBrick<Brick>(85, 5, 10, 3, '-');
     level.addBrick<Brick>(100, 20, 20, 5, '#');
     level.addBrick<Brick>(120, 15, 10, 10, '#');
-    level.addBrick<Brick>(150, 20, 40, 5, '#');
-    level.addBrick<FinishBrick>(210, 15, 10, 10);
+    level.addBrick<Brick>(140, 20, 40, 5, '#');
+    level.addBrick<FinishBrick>(190, 15, 10, 10);
 
     level.addEntity<Enemy>(25, 10);
     level.addEntity<Enemy>(80, 10);
@@ -55,24 +55,24 @@ void LevelCreator::loadFirstLevel(GameController& level) {
 void LevelCreator::loadSecondLevel(GameController& level) {
     level.addBrick<Brick>(20, 20, 40, 5, '#');
     level.addBrick<Brick>(60, 15, 10, 10, '#');
-    level.addBrick<Brick>(80, 20, 20, 5, '#');
-    level.addBrick<Brick>(120, 15, 10, 10, '#');
-    level.addBrick<Brick>(150, 20, 40, 5, '#');
-    level.addBrick<FinishBrick>(210, 15, 10, 10);
+    level.addBrick<Brick>(75, 20, 20, 5, '#');
+    level.addBrick<Brick>(105, 15, 10, 10, '#');
+    level.addBrick<Brick>(125, 20, 50, 5, '#');
+    level.addBrick<FinishBrick>(175, 15, 10, 10);
 
     level.addEntity<Enemy>(25, 10);
     level.addEntity<Enemy>(80, 10);
     level.addEntity<Enemy>(65, 10);
     level.addEntity<Enemy>(120, 10);
     level.addEntity<Enemy>(160, 10);
-    level.addEntity<Enemy>(175, 10);
+    level.addEntity<Enemy>(185, 10);
 }
 
 void LevelCreator::loadThirdLevel(GameController& level) {
     level.addBrick<Brick>(20, 20, 40, 5, '#');
-    level.addBrick<Brick>(80, 20, 15, 5, '#');
-    level.addBrick<Brick>(120, 15, 15, 10, '#');
-    level.addBrick<FinishBrick>(160, 10, 15, 15);
+    level.addBrick<Brick>(70, 20, 15, 5, '#');
+    level.addBrick<Brick>(95, 15, 15, 10, '#');
+    level.addBrick<FinishBrick>(120, 10, 15, 15);
 
     level.addEntity<Enemy>(25, 10);
     level.addEntity<Enemy>(50, 10);
